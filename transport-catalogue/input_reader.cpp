@@ -1,9 +1,9 @@
-// место для вашего кода
 #include "input_reader.h"
 #include <iostream>
 #include <algorithm>
 #include <cassert>
 #include <iterator>
+
 template <typename T>
 std::ostream & operator << (
                 std::ostream & os,
@@ -114,17 +114,12 @@ void InputReader::ParseLine(std::string_view line) {
 }
 
 void InputReader::ApplyCommands([[maybe_unused]] TransportCatalogue& catalogue) const {
-    // Реализуйте метод самостоятельно
+
     for(auto &&command : commands_){
-        //std::cout<<command.command<<"-"<<command.id<<"-"<<command.description<<std::endl;
         if(command.command == "Stop"){
-            //std::cout<<ParseCoordinates(Trim(command.description)).lat<<std::endl;
             catalogue.AddStop(command.id, ParseCoordinates(Trim(command.description)));
         }else if(command.command == "Bus"){
-            //std::vector<std::string> stops = ParseRoute(std::string_view{command.description});
-            //std::cout<<ParseRoute(std::string_view{command.description})<<std::endl;
-            catalogue.AddBus(command.id, ParseRoute(std::string_view{command.description}));
+            catalogue.AddBus(command.id, ParseRoute(command.description));
         }
     }
-    
 }

@@ -1,4 +1,3 @@
-// место для вашего кода
 #pragma once
 #include <set>
 #include <stdexcept>
@@ -37,6 +36,7 @@ public:
     
     std::vector<std::string> GetBusInfo(const std::string& name) const;
     std::set<std::string> GetBusesForStop(const std::string& stop_name) const;
+
 
 private:
     std::deque<Stop> stops_;
