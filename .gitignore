@@ -33,4 +33,4 @@
 
 # Without vs code and txt
 .vscode
-.txt
+*.txt
