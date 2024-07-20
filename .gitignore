@@ -31,5 +31,6 @@
 *.out
 *.app
 
-# Without vs code
+# Without vs code and txt
 .vscode
+.txt
