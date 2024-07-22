@@ -20,11 +20,7 @@ TransportCatalogue::~TransportCatalogue() {
     // Деструктор
 }
 */
-void TransportCatalogue::AddStop(const string& name) {
-    
-    stops_.push_back({name, {}});
-    reference_to_stops_.insert({name, &stops_.back()});
-}
+
 void TransportCatalogue::AddStop(const string& name, const Coordinates coordinates) {
     
     if(auto iter = reference_to_stops_.find(name); iter != reference_to_stops_.end()){
@@ -43,7 +39,7 @@ void TransportCatalogue::AddBus(const string& name, const vector<string_view>& s
     bus.name_ = name;
     for(const auto &name_stop : stops){
         if (reference_to_stops_.count(string{name_stop}) == 0) {
-            AddStop(string{name_stop});
+            AddStop(string{name_stop}, Coordinates{});
         }
         bus.stops_.push_back(reference_to_stops_.at(string{name_stop}));
         stop_to_buses_[string{name_stop}].insert(name);
@@ -71,16 +67,18 @@ Bus TransportCatalogue::FindBus(const string& name) const {
    
 }
 
-vector<string> TransportCatalogue::GetBusInfo(const string& name) const {
+BusInfo TransportCatalogue::GetBusInfo(const string& name) const {
     
-    double length = 0.00;
+    double length = 0;
     set<string> unique_stops;
     
     
     Bus bus = FindBus(name);
-    
+    //static BusInfo result {"", "", ""}; 
+    // почему-то  businfo возвращалось не пустым, когда должно было
+    // а с предыдущим 
     if(bus.name_ == "" ){
-        return {};
+        return BusInfo{};
     }
     int count_unique_stops = 0;
     
@@ -94,12 +92,14 @@ vector<string> TransportCatalogue::GetBusInfo(const string& name) const {
         }
          
     }
+    //result = {to_string(bus.stops_.size()), to_string(count_unique_stops), to_string(length)};
     return {to_string(bus.stops_.size()), to_string(count_unique_stops), to_string(length)};
 }
-set<string> TransportCatalogue::GetBusesForStop(const string& stop_name) const {
+const set<string> & TransportCatalogue::GetBusesForStop(const string& stop_name) const {
     
     if(auto iter = stop_to_buses_.find(stop_name); iter != stop_to_buses_.end()){
         return (iter->second);
     }
-    return set<string>{};
+    static set<string> result = {};
+    return  result;
 };

@@ -17,17 +17,17 @@ void ParseAndPrintStat(const TransportCatalogue& transport_catalogue, std::strin
     std::string parameter = std::string{request_.substr(gap + 1)};
     
     if(command == "Bus"){
-        std::vector<std::string> info = transport_catalogue.GetBusInfo(parameter);
-        if(info.size() == 0){
+        const BusInfo & info = transport_catalogue.GetBusInfo(parameter);
+        if(info){
             output<<request<<": not found"<<std::endl;
         }else{
-            output<<request<<": "<<info[0]<<" stops on route, "<<info[1]<<" unique stops, "<<info[2]<<" route length"<<std::endl;
+            output<<request<<": "<<info.stops_on_route<<" stops on route, "<<info.unique_stops<<" unique stops, "<<info.route_length<<" route length"<<std::endl;
         }
     }else if(command == "Stop"){
         Stop stop_ = transport_catalogue.FindStop(parameter);
         
         if(stop_.name_ != ""){
-            std::set<std::string> buses = transport_catalogue.GetBusesForStop(parameter);
+            const std::set<std::string> & buses = transport_catalogue.GetBusesForStop(parameter);
             if(!buses.empty()){
                 output<<request<<": buses ";
                 for(const auto & bus : buses){
@@ -44,3 +44,13 @@ void ParseAndPrintStat(const TransportCatalogue& transport_catalogue, std::strin
     
     
 }
+
+void RequestingStatistics(const TransportCatalogue& transport_catalogue, std::istream& input, std::ostream& output){
+    int stat_request_count;
+    input >> stat_request_count >> std::ws;
+    for (int i = 0; i < stat_request_count; ++i) {
+        std::string line;
+        std::getline(input, line);
+        ParseAndPrintStat(transport_catalogue, line, output);
+    }
+};

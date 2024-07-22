@@ -11,6 +11,21 @@
 
 #include "geo.h"
 
+struct BusInfo {
+    explicit operator bool() const {
+        return stops_on_route.empty();
+    }
+
+    bool operator!() const {
+        return !operator bool();
+    }
+
+    std::string stops_on_route;      
+    std::string unique_stops;           
+    std::string route_length;  
+};
+
+
 struct Stop{
     std::string name_;
     Coordinates coordinates_;
@@ -25,7 +40,7 @@ class TransportCatalogue {
 public:
     //TransportCatalogue() = default();
     //~TransportCatalogue();
-    void AddStop(const std::string& name);
+    //void AddStop(const std::string& name);
     void AddStop(const std::string& name,const Coordinates coordinates);
     void AddBus(const std::string& name, const std::vector<std::string_view>& stops);
     
@@ -34,8 +49,8 @@ public:
     Bus FindBus(const std::string& name) const;
     
     
-    std::vector<std::string> GetBusInfo(const std::string& name) const;
-    std::set<std::string> GetBusesForStop(const std::string& stop_name) const;
+    BusInfo GetBusInfo(const std::string& name) const;
+    const std::set<std::string> & GetBusesForStop(const std::string& stop_name) const;
 
 
 private:
