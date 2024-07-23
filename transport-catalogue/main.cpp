@@ -18,7 +18,7 @@ int main() {
         InputReader reader(cin);
         reader.ApplyCommands(catalogue);
     }
-    RequestingStatistics(catalogue, cin, cout);
+    ProcessStatistics(catalogue, cin, cout);
     
     //fclose (stdin);
     //fclose (stdout);

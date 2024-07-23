@@ -49,34 +49,36 @@ void TransportCatalogue::AddBus(const string& name, const vector<string_view>& s
     this->reference_to_buses_.insert({name, &buses_.back()});
 }
 
-Stop TransportCatalogue::FindStop(const string& name) const {
+const Stop &TransportCatalogue::FindStop(string_view name) const {
     
-    if(auto iter = reference_to_stops_.find(name); iter != reference_to_stops_.end()){
+    if(auto iter = reference_to_stops_.find(string{name}); iter != reference_to_stops_.end()){
         return *(iter->second);
     }
-    return Stop{};
+    static Stop empty_result = {};
+    return empty_result;
     
 }
 
-Bus TransportCatalogue::FindBus(const string& name) const {
+const Bus &TransportCatalogue::FindBus(string_view name) const {
     
-    if(auto iter = reference_to_buses_.find(name); iter != reference_to_buses_.end()){
+    if(auto iter = reference_to_buses_.find(string{name}); iter != reference_to_buses_.end()){
         return *(iter->second);
     }
-    return Bus{};
+    static Bus empty_result = {};
+    return empty_result;
    
 }
 
-BusInfo TransportCatalogue::GetBusInfo(const string& name) const {
+BusInfo TransportCatalogue::GetBusInfo(string_view name) const {
     
     double length = 0;
     set<string> unique_stops;
     
     
     Bus bus = FindBus(name);
-    //static BusInfo result {"", "", ""}; 
+    //static BusInfo result; //{"", "", ""}; 
     // почему-то  businfo возвращалось не пустым, когда должно было
-    // а с предыдущим 
+    // а с предыдущим значением 
     if(bus.name_ == "" ){
         return BusInfo{};
     }
@@ -95,9 +97,9 @@ BusInfo TransportCatalogue::GetBusInfo(const string& name) const {
     //result = {to_string(bus.stops_.size()), to_string(count_unique_stops), to_string(length)};
     return {to_string(bus.stops_.size()), to_string(count_unique_stops), to_string(length)};
 }
-const set<string> & TransportCatalogue::GetBusesForStop(const string& stop_name) const {
+const set<string> & TransportCatalogue::GetBusesForStop(string_view stop_name) const {
     
-    if(auto iter = stop_to_buses_.find(stop_name); iter != stop_to_buses_.end()){
+    if(auto iter = stop_to_buses_.find(string{stop_name}); iter != stop_to_buses_.end()){
         return (iter->second);
     }
     static set<string> result = {};

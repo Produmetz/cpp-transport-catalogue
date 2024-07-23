@@ -45,7 +45,7 @@ void ParseAndPrintStat(const TransportCatalogue& transport_catalogue, std::strin
     
 }
 
-void RequestingStatistics(const TransportCatalogue& transport_catalogue, std::istream& input, std::ostream& output){
+void ProcessStatistics(const TransportCatalogue& transport_catalogue, std::istream& input, std::ostream& output){
     int stat_request_count;
     input >> stat_request_count >> std::ws;
     for (int i = 0; i < stat_request_count; ++i) {

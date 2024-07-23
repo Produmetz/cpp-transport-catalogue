@@ -45,12 +45,12 @@ public:
     void AddBus(const std::string& name, const std::vector<std::string_view>& stops);
     
     
-    Stop FindStop(const std::string& name) const;
-    Bus FindBus(const std::string& name) const;
+    const Stop &FindStop(std::string_view name) const;
+    const Bus &FindBus(std::string_view name) const;
     
     
-    BusInfo GetBusInfo(const std::string& name) const;
-    const std::set<std::string> & GetBusesForStop(const std::string& stop_name) const;
+    BusInfo GetBusInfo(std::string_view name) const;
+    const std::set<std::string> &GetBusesForStop(std::string_view stop_name) const;
 
 
 private:
