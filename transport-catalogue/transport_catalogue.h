@@ -11,6 +11,21 @@
 
 #include "geo.h"
 
+struct hash_pair {
+    template <class T1, class T2>
+    size_t operator()(const std::pair<T1, T2>& p) const {
+        // Hash the first element
+        size_t hash1 = std::hash<T1>{}(p.first);
+        // Hash the second element
+        size_t hash2 = std::hash<T2>{}(p.second);
+        // Combine the two hash values
+        return hash1
+               ^ (hash2 + 0x9e3779b9 + (hash1 << 6)
+                  + (hash1 >> 2));
+    }
+};
+
+
 struct BusInfo {
     explicit operator bool() const {
         return stops_on_route.empty();
@@ -45,12 +60,12 @@ public:
     void AddBus(const std::string& name, const std::vector<std::string_view>& stops);
     
     
-    Stop FindStop(const std::string& name) const;
-    Bus FindBus(const std::string& name) const;
+    const Stop &FindStop(std::string_view name) const;
+    const Bus &FindBus(std::string_view name) const;
     
     
-    BusInfo GetBusInfo(const std::string& name) const;
-    const std::set<std::string> & GetBusesForStop(const std::string& stop_name) const;
+    BusInfo GetBusInfo(std::string_view name) const;
+    const std::set<std::string> &GetBusesForStop(std::string_view stop_name) const;
 
 
 private:
@@ -59,5 +74,5 @@ private:
     std::unordered_map<std::string,  Stop*> reference_to_stops_;
     std::unordered_map<std::string,  Bus*> reference_to_buses_;
     std::unordered_map<std::string, std::set<std::string>> stop_to_buses_;
-   
+    std::unordered_map<std::pair<std::string, std::string>,  double, hash_pair> distance_between_stops_;
 };
