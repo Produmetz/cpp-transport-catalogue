@@ -46,7 +46,7 @@ Coordinates ParseCoordinates(std::string_view str) {
     return {lat, lng};
 }
 
-ParsedData ParseString(std::string_view input) {
+ParsedData ParseStopData(std::string_view input) {
     std::istringstream stream(std::string{input});
     ParsedData result;
     stream >> std::setprecision(10);
@@ -59,11 +59,11 @@ ParsedData ParseString(std::string_view input) {
     while (std::getline(stream, stopInfo, ',')) {
         std::istringstream stopStream(stopInfo);
         toStopInfo stop;
-        char m;
+        char letter_m;
         std::string to;
         
         // Парсинг "Dm to stopN"
-        stopStream >> stop.distance >> m >> to >> std::ws;
+        stopStream >> stop.distance >> letter_m >> to >> std::ws;
         std::getline(stopStream, stop.name);
         
         result.stops.push_back(stop);
@@ -153,8 +153,13 @@ void InputReader::ApplyCommands([[maybe_unused]] TransportCatalogue& catalogue) 
 
     for(auto &&command : commands_){
         if(command.command == "Stop"){
-            ParsedData data = ParseString(Trim(command.description));
-            catalogue.AddStop(command.id, data.coordinates, data.stops);
+            ParsedData data = ParseStopData(Trim(command.description));
+            catalogue.AddStop(command.id, data.coordinates);
+            if(!data.stops.empty()){
+                for(auto &&stop : data.stops){
+                    catalogue.AddDistance(command.id, stop.name, stop.distance);
+                }
+            }
         }else if(command.command == "Bus"){
             catalogue.AddBus(command.id, ParseRoute(command.description));
         }

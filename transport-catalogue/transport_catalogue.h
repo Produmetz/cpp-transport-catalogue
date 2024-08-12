@@ -60,9 +60,9 @@ public:
     //TransportCatalogue() = default();
     //~TransportCatalogue();
     //void AddStop(const std::string& name);
-    void AddStop(const std::string& name, const Coordinates coordinates, const std::vector<toStopInfo>& stops);
+    void AddStop(const std::string& name, const Coordinates coordinates);
     void AddBus(const std::string& name, const std::vector<std::string_view>& stops);
-    
+    void AddDistance(const std::string& from_stop, const std::string& to_stop, int distance);
     
     const Stop &FindStop(std::string_view name) const;
     const Bus &FindBus(std::string_view name) const;

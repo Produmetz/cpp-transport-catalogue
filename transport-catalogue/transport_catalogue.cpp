@@ -20,19 +20,18 @@ TransportCatalogue::~TransportCatalogue() {
     // Деструктор
 }
 */
+void TransportCatalogue::AddDistance(const std::string& from_stop, const std::string& to_stop, int distance){
+    distance_between_stops_.insert({{from_stop, to_stop}, distance});
+};
 
-void TransportCatalogue::AddStop(const string& name, const Coordinates coordinates, const std::vector<toStopInfo>& stops) {
+
+void TransportCatalogue::AddStop(const string& name, const Coordinates coordinates) {
     
     if(auto iter = reference_to_stops_.find(name); iter != reference_to_stops_.end()){
         (*(iter->second)).coordinates_ = coordinates;
     }else{
         stops_.push_back({name, coordinates});
         reference_to_stops_.insert({name, &stops_.back()});
-    }
-    if(!stops.empty()){
-        for(auto &&stop : stops){
-            distance_between_stops_.insert({{name, stop.name},stop.distance});
-        }
     }
     stop_to_buses_.insert({name, {}});
 
@@ -44,7 +43,7 @@ void TransportCatalogue::AddBus(const string& name, const vector<string_view>& s
     bus.name_ = name;
     for(const auto &name_stop : stops){
         if (reference_to_stops_.count(string{name_stop}) == 0) {
-            AddStop(string{name_stop}, Coordinates{}, {});
+            AddStop(string{name_stop}, Coordinates{});
         }
         bus.stops_.push_back(reference_to_stops_.at(string{name_stop}));
         stop_to_buses_[string{name_stop}].insert(name);
