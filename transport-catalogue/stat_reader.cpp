@@ -21,7 +21,7 @@ void ParseAndPrintStat(const TransportCatalogue& transport_catalogue, std::strin
         if(info){
             output<<request<<": not found"<<std::endl;
         }else{
-            output<<request<<": "<<info.stops_on_route<<" stops on route, "<<info.unique_stops<<" unique stops, "<<info.route_length<<" route length"<<std::endl;
+            output<<request<<": "<<info.stops_on_route<<" stops on route, "<<info.unique_stops<<" unique stops, "<<info.route_length<<" route length, "<<info.curvature<<" curvature"<<std::endl;
         }
     }else if(command == "Stop"){
         Stop stop_ = transport_catalogue.FindStop(parameter);

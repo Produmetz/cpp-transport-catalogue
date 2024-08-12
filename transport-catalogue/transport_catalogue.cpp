@@ -21,13 +21,18 @@ TransportCatalogue::~TransportCatalogue() {
 }
 */
 
-void TransportCatalogue::AddStop(const string& name, const Coordinates coordinates) {
+void TransportCatalogue::AddStop(const string& name, const Coordinates coordinates, const std::vector<toStopInfo>& stops) {
     
     if(auto iter = reference_to_stops_.find(name); iter != reference_to_stops_.end()){
         (*(iter->second)).coordinates_ = coordinates;
     }else{
         stops_.push_back({name, coordinates});
         reference_to_stops_.insert({name, &stops_.back()});
+    }
+    if(!stops.empty()){
+        for(auto &&stop : stops){
+            distance_between_stops_.insert({{name, stop.name},stop.distance});
+        }
     }
     stop_to_buses_.insert({name, {}});
 
@@ -39,7 +44,7 @@ void TransportCatalogue::AddBus(const string& name, const vector<string_view>& s
     bus.name_ = name;
     for(const auto &name_stop : stops){
         if (reference_to_stops_.count(string{name_stop}) == 0) {
-            AddStop(string{name_stop}, Coordinates{});
+            AddStop(string{name_stop}, Coordinates{}, {});
         }
         bus.stops_.push_back(reference_to_stops_.at(string{name_stop}));
         stop_to_buses_[string{name_stop}].insert(name);
@@ -71,7 +76,8 @@ const Bus &TransportCatalogue::FindBus(string_view name) const {
 
 BusInfo TransportCatalogue::GetBusInfo(string_view name) const {
     
-    double length = 0;
+    int length = 0;
+    double length_from_coordinates = 0;
     set<string> unique_stops;
     
     
@@ -90,12 +96,18 @@ BusInfo TransportCatalogue::GetBusInfo(string_view name) const {
             unique_stops.insert(bus.stops_[i]->name_);
         }
         if(i != (bus.stops_.size()-1)){
-            length += ComputeDistance(bus.stops_[i]->coordinates_, bus.stops_[i + 1]->coordinates_) ;
+            length_from_coordinates += ComputeDistance(bus.stops_[i]->coordinates_, bus.stops_[i + 1]->coordinates_) ;
+            if(auto iter = distance_between_stops_.find({bus.stops_[i]->name_, bus.stops_[i + 1]->name_}); iter != distance_between_stops_.end()){
+                length += iter->second;
+            }else{
+                length += distance_between_stops_.at({bus.stops_[i + 1]->name_, bus.stops_[i]->name_});
+            }
+            
         }
          
     }
     //result = {to_string(bus.stops_.size()), to_string(count_unique_stops), to_string(length)};
-    return {to_string(bus.stops_.size()), to_string(count_unique_stops), to_string(length)};
+    return {to_string(bus.stops_.size()), to_string(count_unique_stops), to_string(length), to_string(1.0*length/length_from_coordinates)};
 }
 const set<string> & TransportCatalogue::GetBusesForStop(string_view stop_name) const {
     

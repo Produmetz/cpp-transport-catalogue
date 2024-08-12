@@ -24,7 +24,10 @@ struct hash_pair {
                   + (hash1 >> 2));
     }
 };
-
+struct toStopInfo {
+    int distance;
+    std::string name;
+};
 
 struct BusInfo {
     explicit operator bool() const {
@@ -37,7 +40,8 @@ struct BusInfo {
 
     std::string stops_on_route;      
     std::string unique_stops;           
-    std::string route_length;  
+    std::string route_length; 
+    std::string curvature; 
 };
 
 
@@ -56,7 +60,7 @@ public:
     //TransportCatalogue() = default();
     //~TransportCatalogue();
     //void AddStop(const std::string& name);
-    void AddStop(const std::string& name,const Coordinates coordinates);
+    void AddStop(const std::string& name, const Coordinates coordinates, const std::vector<toStopInfo>& stops);
     void AddBus(const std::string& name, const std::vector<std::string_view>& stops);
     
     
@@ -74,5 +78,5 @@ private:
     std::unordered_map<std::string,  Stop*> reference_to_stops_;
     std::unordered_map<std::string,  Bus*> reference_to_buses_;
     std::unordered_map<std::string, std::set<std::string>> stop_to_buses_;
-    std::unordered_map<std::pair<std::string, std::string>,  double, hash_pair> distance_between_stops_;
+    std::unordered_map<std::pair<std::string, std::string>,  int, hash_pair> distance_between_stops_;
 };

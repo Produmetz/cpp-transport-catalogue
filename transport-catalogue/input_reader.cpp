@@ -2,7 +2,9 @@
 #include <iostream>
 #include <algorithm>
 #include <cassert>
+//#include <utility>
 #include <iterator>
+#include <iomanip>
 
 template <typename T>
 std::ostream & operator << (
@@ -15,6 +17,14 @@ std::ostream & operator << (
     }
     return os;
 }
+
+
+
+struct ParsedData {
+    Coordinates coordinates;
+    std::vector<toStopInfo> stops;
+};
+
 /**
  * Парсит строку вида "10.123,  -30.1837" и возвращает пару координат (широта, долгота)
  */
@@ -34,6 +44,32 @@ Coordinates ParseCoordinates(std::string_view str) {
     double lng = std::stod(std::string(str.substr(not_space2)));
 
     return {lat, lng};
+}
+
+ParsedData ParseString(std::string_view input) {
+    std::istringstream stream(std::string{input});
+    ParsedData result;
+    stream >> std::setprecision(10);
+    // Чтение широты и долготы
+    char comma;
+    stream >> result.coordinates.lat >> comma >> result.coordinates.lng >> comma;
+
+    // Парсинг остальной части строки
+    std::string stopInfo;
+    while (std::getline(stream, stopInfo, ',')) {
+        std::istringstream stopStream(stopInfo);
+        toStopInfo stop;
+        char m;
+        std::string to;
+        
+        // Парсинг "Dm to stopN"
+        stopStream >> stop.distance >> m >> to >> std::ws;
+        std::getline(stopStream, stop.name);
+        
+        result.stops.push_back(stop);
+    }
+
+    return result;
 }
 
 /**
@@ -117,7 +153,8 @@ void InputReader::ApplyCommands([[maybe_unused]] TransportCatalogue& catalogue) 
 
     for(auto &&command : commands_){
         if(command.command == "Stop"){
-            catalogue.AddStop(command.id, ParseCoordinates(Trim(command.description)));
+            ParsedData data = ParseString(Trim(command.description));
+            catalogue.AddStop(command.id, data.coordinates, data.stops);
         }else if(command.command == "Bus"){
             catalogue.AddBus(command.id, ParseRoute(command.description));
         }
