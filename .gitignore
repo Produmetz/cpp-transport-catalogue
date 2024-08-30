@@ -35,5 +35,6 @@
 .vscode
 *.txt
 
+#the past
 stat_reader.*
 input_reader.*
