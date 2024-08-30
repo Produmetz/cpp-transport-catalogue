@@ -1,4 +1,9 @@
 #pragma once
+
+/*
+ * Здесь можно разместить код транспортного справочника
+ */
+//#pragma once
 #include <set>
 #include <stdexcept>
 #include <string>
@@ -8,8 +13,11 @@
 #include <utility>
 #include <optional>
 #include <unordered_map>
+#include <map>
 
-#include "geo.h"
+//#include "geo.h"
+#include "domain.h"
+
 
 struct hash_pair {
     template <class T1, class T2>
@@ -24,35 +32,7 @@ struct hash_pair {
                   + (hash1 >> 2));
     }
 };
-struct toStopInfo {
-    int distance;
-    std::string name;
-};
 
-struct BusInfo {
-    explicit operator bool() const {
-        return stops_on_route.empty();
-    }
-
-    bool operator!() const {
-        return !operator bool();
-    }
-
-    std::string stops_on_route;      
-    std::string unique_stops;           
-    std::string route_length; 
-    std::string curvature; 
-};
-
-
-struct Stop{
-    std::string name_;
-    Coordinates coordinates_;
-};
-struct Bus{
-    std::string name_;
-    std::vector<Stop*> stops_;    
-};
 
 
 class TransportCatalogue {
@@ -60,17 +40,18 @@ public:
     //TransportCatalogue() = default();
     //~TransportCatalogue();
     //void AddStop(const std::string& name);
-    void AddStop(const std::string& name, const Coordinates coordinates);
-    void AddBus(const std::string& name, const std::vector<std::string_view>& stops);
+    void AddStop(const std::string& name, const geo::Coordinates coordinates);
+    void AddBus(const std::string& name, const std::vector<std::string_view>& stops, bool is_circle);
     void AddDistance(const std::string& from_stop, const std::string& to_stop, int distance);
     
     const Stop &FindStop(std::string_view name) const;
     const Bus &FindBus(std::string_view name) const;
     
-    
+    size_t UniqueStopsCount(std::string_view bus_number) const;
+    int GetDistance(const Stop* from, const Stop* to) const;
     BusInfo GetBusInfo(std::string_view name) const;
     const std::set<std::string> &GetBusesForStop(std::string_view stop_name) const;
-
+    const std::map<std::string_view, const Bus*> GetSortedAllBuses() const;
 
 private:
     std::deque<Stop> stops_;

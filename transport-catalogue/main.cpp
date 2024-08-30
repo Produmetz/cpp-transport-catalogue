@@ -1,26 +1,17 @@
-#include <iostream>
-#include <string>
-#include <fstream>
-#include <cstdlib>
-#include <cstdio>
-
-#include "input_reader.h"
-#include "stat_reader.h"
-
-using namespace std;
+#include "json_reader.h"
+#include "request_handler.h"
 
 int main() {
     TransportCatalogue catalogue;
-    //freopen ("tsB_case1_input.txt", "r", stdin);
-    //freopen ("output.txt", "w", stdout);
+    JsonReader json_doc(std::cin);
     
-    {
-        InputReader reader(cin);
-        reader.ApplyCommands(catalogue);
-    }
-    ProcessStatistics(catalogue, cin, cout);
+    json_doc.FillCatalogue(catalogue);
     
-    //fclose (stdin);
-    //fclose (stdout);
-    
+    const auto& stat_requests = json_doc.GetStatRequests();
+    const auto& render_settings = json_doc.GetRenderSettings().AsMap();
+    const auto& renderer = json_doc.FillRenderSettings(render_settings);
+
+    RequestHandler rh(catalogue, renderer);
+    json_doc.ProcessRequests(stat_requests, rh);
+    return 0;
 }
