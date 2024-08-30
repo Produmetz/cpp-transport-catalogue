@@ -34,3 +34,6 @@
 # Without vs code and txt
 .vscode
 *.txt
+
+stat_reader.*
+input_reader.*
