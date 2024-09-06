@@ -33,7 +33,10 @@
 
 # Without vs code and txt
 .vscode
-*.txt
+#*.txt
+build
+otherfiles
+#cpp-transport-catalogue
 
 #the past
 stat_reader.*

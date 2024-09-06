@@ -30,7 +30,7 @@ private:
     json::Document input_;
     json::Node dummy_ = nullptr;
 
-    std::tuple<std::string_view, geo::Coordinates, std::map<std::string_view, int>> FillStop(const json::Dict& request_map) const;
+    ToStopInfo FillStop(const json::Dict& request_map) const;
     void FillStopDistances(TransportCatalogue& catalogue) const;
-    std::tuple<std::string, std::vector<std::string_view>, bool> FillRoute(const json::Dict& request_map /* , TransportCatalogue& catalogue*/) const;
+    AlmostBus FillRoute(const json::Dict& request_map , TransportCatalogue& catalogue) const;
 };

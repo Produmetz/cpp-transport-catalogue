@@ -105,38 +105,36 @@ size_t TransportCatalogue::UniqueStopsCount(std::string_view bus_number) const {
 
 BusInfo TransportCatalogue::GetBusInfo(string_view name) const {
     
-    double length = 0;
-    double length_from_coordinates = 0;
-    set<string> unique_stops;
-    
-    
-    Bus bus = FindBus(name);
-    //static BusInfo result; //{"", "", ""}; 
-    // почему-то  businfo возвращалось не пустым, когда должно было
-    // а с предыдущим значением 
-    if(bus.name_ == "" ){
-        return BusInfo{};
-    }
-    size_t count_unique_stops = 0;
-    
-    for(size_t i = 0; i < bus.stops_.size(); ++i ){
-        if(unique_stops.count(bus.stops_[i]->name_) == 0){
-            ++count_unique_stops;
-            unique_stops.insert(bus.stops_[i]->name_);
+    BusInfo bus_info{};
+    const Bus bus = this->FindBus(name);
+
+    if (bus.name_.empty()) std::invalid_argument("bus not found");
+    if (bus.is_circle) bus_info.stops_on_route = bus.stops_.size();
+    else bus_info.stops_on_route = bus.stops_.size() * 2 - 1;
+
+    int route_length = 0;
+    double geographic_length = 0.0;
+
+    for (size_t i = 0; i < bus.stops_.size() - 1; ++i) {
+        auto from = bus.stops_[i];
+        auto to = bus.stops_[i + 1];
+        if (bus.is_circle) {
+            route_length += this->GetDistance(from, to);
+            geographic_length += geo::ComputeDistance(from->coordinates_,
+                to->coordinates_);
         }
-        if(i != (bus.stops_.size()-1)){
-            length_from_coordinates += ComputeDistance(bus.stops_[i]->coordinates_, bus.stops_[i + 1]->coordinates_) ;
-            if(auto iter = distance_between_stops_.find({bus.stops_[i]->name_, bus.stops_[i + 1]->name_}); iter != distance_between_stops_.end()){
-                length += iter->second;
-            }else{
-                length += distance_between_stops_.at({bus.stops_[i + 1]->name_, bus.stops_[i]->name_});
-            }
-            
+        else {
+            route_length += this->GetDistance(from, to) + this->GetDistance(to, from);
+            geographic_length += geo::ComputeDistance(from->coordinates_,
+                to->coordinates_) * 2;
         }
-         
     }
-    //result = {to_string(bus.stops_.size()), to_string(count_unique_stops), to_string(length)};
-    return {bus.stops_.size(), count_unique_stops, length, 1.0*length/length_from_coordinates};
+
+    bus_info.unique_stops = this->UniqueStopsCount(name);
+    bus_info.route_length = route_length;
+    bus_info.curvature = route_length / geographic_length;
+
+    return bus_info;
 }
 const set<string> & TransportCatalogue::GetBusesForStop(string_view stop_name) const {
     

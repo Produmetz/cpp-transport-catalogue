@@ -13,13 +13,10 @@
  */
 #include <string>
 #include <vector>
-
+#include <map>
 #include "geo.h"
 
-struct toStopInfo {
-    int distance;
-    std::string name;
-};
+ 
 
 struct BusInfo {
     explicit operator bool() const {
@@ -45,4 +42,15 @@ struct Bus{
     std::string name_;
     std::vector<Stop*> stops_; 
     bool is_circle;   
+};
+struct AlmostBus{
+    std::string name_;
+    std::vector<std::string_view> names_stops_; 
+    bool is_circle;   
+};
+
+struct ToStopInfo {
+    Stop stop_;
+    /*distance fron stop_ */
+    std::map<std::string_view, int> distance_to_stops_;
 };

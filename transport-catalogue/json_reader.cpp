@@ -34,8 +34,8 @@ void JsonReader::FillCatalogue(TransportCatalogue& catalogue) {
         const auto& request_stops_map = request_stops.AsMap();
         const auto& type = request_stops_map.at("type").AsString();
         if (type == "Stop") {
-            auto [stop_name, coordinates, stop_distances] = FillStop(request_stops_map);
-            catalogue.AddStop(std::string{stop_name}, coordinates);
+            ToStopInfo info = FillStop(request_stops_map);
+            catalogue.AddStop(info.stop_.name_, info.stop_.coordinates_);
         }
     }
     FillStopDistances(catalogue);
@@ -44,13 +44,13 @@ void JsonReader::FillCatalogue(TransportCatalogue& catalogue) {
         const auto& request_bus_map = request_bus.AsMap();
         const auto& type = request_bus_map.at("type").AsString();
         if (type == "Bus") {
-            auto [bus_number, stops, circular_route] = FillRoute(request_bus_map);
+            auto [bus_number, stops, circular_route] = FillRoute(request_bus_map, catalogue);
             catalogue.AddBus(bus_number, stops, circular_route);
         }
     }
 }
 
-std::tuple<std::string_view, geo::Coordinates, std::map<std::string_view, int>> JsonReader::FillStop(const json::Dict& request_map) const {
+ToStopInfo JsonReader::FillStop(const json::Dict& request_map) const {
     std::string_view stop_name = request_map.at("name").AsString();
     geo::Coordinates coordinates = { request_map.at("latitude").AsDouble(), request_map.at("longitude").AsDouble() };
     std::map<std::string_view, int> stop_distances;
@@ -58,7 +58,8 @@ std::tuple<std::string_view, geo::Coordinates, std::map<std::string_view, int>> 
     for (auto& [stop_name, dist] : distances) {
         stop_distances.emplace(stop_name, dist.AsInt());
     }
-    return std::make_tuple(stop_name, coordinates, stop_distances);
+    return {{std::string{stop_name}, coordinates}, stop_distances};
+    //std::make_tuple(stop_name, coordinates, stop_distances);
 }
 
 void JsonReader::FillStopDistances(TransportCatalogue& catalogue) const {
@@ -67,25 +68,24 @@ void JsonReader::FillStopDistances(TransportCatalogue& catalogue) const {
         const auto& request_stops_map = request_stops.AsMap();
         const auto& type = request_stops_map.at("type").AsString();
         if (type == "Stop") {
-            auto [stop_name, coordinates, stop_distances] = FillStop(request_stops_map);
-            for (auto& [to_name, dist] : stop_distances) {
-                auto from = catalogue.FindStop(stop_name);
-                auto to = catalogue.FindStop(to_name);
-                catalogue.AddDistance(from.name_, to.name_, dist);
+            ToStopInfo info = FillStop(request_stops_map);
+            for (auto& [to_name, dist] : info.distance_to_stops_) {
+                catalogue.AddDistance(info.stop_.name_, std::string{to_name}, dist);
             }
         }
     }
 }
 
-std::tuple<std::string, std::vector<std::string_view>, bool> JsonReader::FillRoute(const json::Dict& request_map/*, TransportCatalogue& catalogue*/) const {
+AlmostBus JsonReader::FillRoute(const json::Dict& request_map, TransportCatalogue& catalogue) const {
     std::string bus_number = request_map.at("name").AsString();
-    std::vector<std::string_view> stops;
+    std::vector<std::string_view> names_stops;
     for (auto& stop : request_map.at("stops").AsArray()) {
-        stops.emplace_back(std::string_view{stop.AsString()});
+        names_stops.emplace_back(std::string_view{stop.AsString()});
     }
     bool circular_route = request_map.at("is_roundtrip").AsBool();
 
-    return std::make_tuple(bus_number, stops, circular_route);
+    return {bus_number, names_stops, circular_route}; 
+    //std::make_tuple(bus_number, stops, circular_route);
 }
 
 renderer::MapRenderer JsonReader::FillRenderSettings(const json::Dict& request_map) const {
