@@ -17,6 +17,7 @@ set(SOURCE ./transport-catalogue/main.cpp
            ./transport-catalogue/map_renderer.cpp 
            ./transport-catalogue/json.cpp 
            ./transport-catalogue/json_reader.cpp 
+           ./transport-catalogue/json_builder.cpp 
            ./transport-catalogue/geo.cpp 
            ./transport-catalogue/domain.cpp)
 

@@ -32,5 +32,5 @@ private:
 
     ToStopInfo FillStop(const json::Dict& request_map) const;
     void FillStopDistances(TransportCatalogue& catalogue) const;
-    AlmostBus FillRoute(const json::Dict& request_map , TransportCatalogue& catalogue) const;
+    AlmostBus FillRoute(const json::Dict& request_map ) const;
 };
