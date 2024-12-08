@@ -1,9 +1,5 @@
 #pragma once
 
-/*
- * Здесь можно разместить код транспортного справочника
- */
-//#pragma once
 #include <set>
 #include <stdexcept>
 #include <string>
@@ -15,7 +11,7 @@
 #include <unordered_map>
 #include <map>
 
-//#include "geo.h"
+#include "geo.h"
 #include "domain.h"
 
 
@@ -52,6 +48,7 @@ public:
     BusInfo GetBusInfo(std::string_view name) const;
     const std::set<std::string> &GetBusesForStop(std::string_view stop_name) const;
     const std::map<std::string_view, const Bus*> GetSortedAllBuses() const;
+    const std::map<std::string_view, const Stop*> GetSortedAllStops() const;
 
 private:
     std::deque<Stop> stops_;

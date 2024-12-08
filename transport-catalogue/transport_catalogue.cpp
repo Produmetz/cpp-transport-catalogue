@@ -151,3 +151,10 @@ const std::map<std::string_view, const Bus*> TransportCatalogue::GetSortedAllBus
     }
     return result;
 }
+const std::map<std::string_view, const Stop*> TransportCatalogue::GetSortedAllStops() const {
+    std::map<std::string_view, const Stop*> result;
+    for (const auto& stop : reference_to_stops_) {
+        result.emplace(stop);
+    }
+    return result;
+}
