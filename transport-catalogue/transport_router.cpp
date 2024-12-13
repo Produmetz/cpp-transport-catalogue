@@ -6,7 +6,8 @@ const graph::DirectedWeightedGraph<double>& TransportRouter::BuildGraph(const Tr
 	//const std::vector<const Stop*> all_pointers_to_stops = catalogue.GetAllStops();
 	graph::DirectedWeightedGraph<double> stops_graph(catalogue.GetCountStops() * 2);
     const auto & all_buses = catalogue.GetSortedAllBuses();
-    double coef = bus_velocity_ * 100 / 6;
+    double coeff_from_kmh_to_mmin = 1000 / 60;
+    double bus_velocity_in_mmin = bus_velocity_ * coeff_from_kmh_to_mmin;
     
     for(const auto &[bus_name, ptr_bus] : all_buses){
         size_t count_stops = ptr_bus->stops_.size();
@@ -34,7 +35,7 @@ const graph::DirectedWeightedGraph<double>& TransportRouter::BuildGraph(const Tr
                         j - i,
                         stop_to_id_[ptr_bus->stops_[i]->name_] + 1,
                         stop_to_id_[ptr_bus->stops_[j]->name_],
-                        length_way / coef
+                        length_way / bus_velocity_in_mmin
                     });
                     if (!IsCircle) {
                         stops_graph.AddEdge({ 
@@ -42,7 +43,7 @@ const graph::DirectedWeightedGraph<double>& TransportRouter::BuildGraph(const Tr
                             j - i,
                             stop_to_id_[ptr_bus->stops_[j]->name_] + 1,
                             stop_to_id_[ptr_bus->stops_[i]->name_],
-                            length_way_reverse / coef
+                            length_way_reverse / bus_velocity_in_mmin
                         });
                     }
                 }
