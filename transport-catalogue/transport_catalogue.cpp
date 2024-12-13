@@ -92,6 +92,39 @@ int TransportCatalogue::GetDistance(const Stop* from, const Stop* to) const {
     }
     return 0;
 }
+int TransportCatalogue::GetDistanceBetweenBusStops(const Bus* bus , const Stop* from, const Stop* to, bool IsForward)  const {
+    int result = 0;
+    bool AreRequiredStops = false;
+    auto iter_begin = IsForward ? bus->stops_.begin(): bus->stops_.end();
+    auto iter_end = IsForward ? bus->stops_.end(): bus->stops_.begin();
+    int increment = IsForward ? 1 : - 1;
+    while (iter_begin != iter_end)
+    {
+        if(AreRequiredStops){
+            if(*iter_begin == to){
+                return result;
+            }
+            result += GetDistance(*iter_begin, *(iter_begin + increment));
+        }else if(*iter_begin == from){
+            AreRequiredStops = true;
+        }
+        iter_begin += increment;
+    }
+    
+
+    /*
+    for(size_t i = ; i < bus->stops_.size(); ++i){
+        if(AreRequiredStops){
+            if(bus->stops_[i] == to){
+                return result;
+            }
+            result += GetDistance(bus->stops_[i], bus->stops_[i + 1]);
+        }else if(bus->stops_[i] == from){
+            AreRequiredStops = true;
+        }
+    }*/
+    return result;
+};
 
 size_t TransportCatalogue::UniqueStopsCount(std::string_view bus_number) const {
     std::unordered_set<std::string_view> unique_stops;
@@ -136,6 +169,11 @@ BusInfo TransportCatalogue::GetBusInfo(string_view name) const {
 
     return bus_info;
 }
+
+size_t TransportCatalogue::GetCountStops() const {
+    return stops_.size();
+};
+
 const set<string> & TransportCatalogue::GetBusesForStop(string_view stop_name) const {
     
     if(auto iter = stop_to_buses_.find(string{stop_name}); iter != stop_to_buses_.end()){
@@ -151,10 +189,10 @@ const std::map<std::string_view, const Bus*> TransportCatalogue::GetSortedAllBus
     }
     return result;
 }
-const std::map<std::string_view, const Stop*> TransportCatalogue::GetSortedAllStops() const {
-    std::map<std::string_view, const Stop*> result;
-    for (const auto& stop : reference_to_stops_) {
-        result.emplace(stop);
+const std::vector<const Stop*> TransportCatalogue::GetAllStops() const {
+    std::vector<const Stop*> result;
+    for (size_t i = 0; i < stops_.size(); ++i) {
+        result.emplace_back(&stops_[i]);
     }
     return result;
 }

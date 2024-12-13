@@ -139,9 +139,9 @@ renderer::MapRenderer JsonReader::FillRenderSettings(const json::Node& settings)
     return render_settings;
 }
 
-Router JsonReader::FillRoutingSettings(const json::Node& settings) const {
-    Router routing_settings;
-    return Router{ settings.AsDict().at("bus_wait_time").AsInt(), settings.AsDict().at("bus_velocity").AsDouble() };
+TransportRouter JsonReader::FillRoutingSettings(const json::Node& settings) const {
+    TransportRouter routing_settings;
+    return TransportRouter{settings.AsDict().at("bus_wait_time").AsInt(), settings.AsDict().at("bus_velocity").AsDouble() };
 }
 
 

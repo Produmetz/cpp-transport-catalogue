@@ -1,71 +1,152 @@
 #include "transport_router.h"
 
 
-const graph::DirectedWeightedGraph<double>& Router::BuildGraph(const TransportCatalogue& catalogue) {
-	const auto& all_stops = catalogue.GetSortedAllStops();
-	const auto& all_buses = catalogue.GetSortedAllBuses();
-	graph::DirectedWeightedGraph<double> stops_graph(all_stops.size() * 2);
-    std::map<std::string, graph::VertexId> stop_ids;
-    graph::VertexId vertex_id = 0;
 
-    for (const auto& [stop_name, stop_info] : all_stops) {
-        stop_ids[stop_info->name_] = vertex_id;
-        stops_graph.AddEdge({
-                stop_info->name_,
-                0,
-                vertex_id,
-                ++vertex_id,
-                static_cast<double>(bus_wait_time_)
-            });
-        ++vertex_id;
-    }
-    stop_ids_ = std::move(stop_ids);
+const graph::DirectedWeightedGraph<double>& TransportRouter::BuildGraph(const TransportCatalogue& catalogue) {
+	//const std::vector<const Stop*> all_pointers_to_stops = catalogue.GetAllStops();
+	graph::DirectedWeightedGraph<double> stops_graph(catalogue.GetCountStops() * 2);
+    const auto & all_buses = catalogue.GetSortedAllBuses();
+    double coef = bus_velocity_ * 100 / 6;
+    
+    for(const auto &[bus_name, ptr_bus] : all_buses){
+        size_t count_stops = ptr_bus->stops_.size();
+        bool IsCircle = ptr_bus->is_circle;
+        for(size_t i = 0; i < count_stops; ++i){
+            int length_way = 0,
+                length_way_reverse = 0; 
+            for( size_t j = i; j < count_stops; ++j){
+                if(stop_to_id_.find(ptr_bus->stops_[j]->name_) == stop_to_id_.end()){
+                    stop_to_id_.insert({ptr_bus->stops_[j]->name_, stop_to_id_.size() * 2}); // if VertexId == size_t
+                    stops_graph.AddEdge({
+                        ptr_bus->stops_[j]->name_,
+                        0,
+                        stop_to_id_[ptr_bus->stops_[j]->name_],
+                        stop_to_id_[ptr_bus->stops_[j]->name_] + 1,
+                        bus_wait_time_ + 0.0
+                    });
 
-    std::for_each(
-        all_buses.begin(),
-        all_buses.end(),
-        [&stops_graph, this, &catalogue](const auto& item) {
-            const auto& bus_info = item.second;
-            const auto& stops = bus_info->stops_;
-            size_t stops_count = stops.size();
-            for (size_t i = 0; i < stops_count; ++i) {
-                for (size_t j = i + 1; j < stops_count; ++j) {
-                    const Stop* stop_from = stops[i];
-                    const Stop* stop_to = stops[j];
-                    int dist_sum = 0;
-                    int dist_sum_inverse = 0;
-                    for (size_t k = i + 1; k <= j; ++k) {
-                        dist_sum += catalogue.GetDistance(stops[k - 1], stops[k]);
-                        dist_sum_inverse += catalogue.GetDistance(stops[k], stops[k - 1]);
-                    }
-                    stops_graph.AddEdge({ bus_info->name_,
-                                          j - i,
-                                          stop_ids_.at(stop_from->name_) + 1,
-                                          stop_ids_.at(stop_to->name_),
-                                          static_cast<double>(dist_sum) / (bus_velocity_ * (100.0 / 6.0))});
-
-                    if (!bus_info->is_circle) {
-                        stops_graph.AddEdge({ bus_info->name_,
-                                              j - i,
-                                              stop_ids_.at(stop_to->name_) + 1,
-                                              stop_ids_.at(stop_from->name_),
-                                              static_cast<double>(dist_sum_inverse) / (bus_velocity_ * (100.0 / 6.0))});
+                }
+                if(i != j){
+                    length_way += catalogue.GetDistance(ptr_bus->stops_[j - 1], ptr_bus->stops_[j]);
+                    length_way_reverse += catalogue.GetDistance(ptr_bus->stops_[j], ptr_bus->stops_[j - 1]);
+                    stops_graph.AddEdge({ 
+                        std::string{bus_name},
+                        j - i,
+                        stop_to_id_[ptr_bus->stops_[i]->name_] + 1,
+                        stop_to_id_[ptr_bus->stops_[j]->name_],
+                        length_way / coef
+                    });
+                    if (!IsCircle) {
+                        stops_graph.AddEdge({ 
+                            std::string{bus_name},
+                            j - i,
+                            stop_to_id_[ptr_bus->stops_[j]->name_] + 1,
+                            stop_to_id_[ptr_bus->stops_[i]->name_],
+                            length_way_reverse / coef
+                        });
                     }
                 }
-            }
-        });
+                /*else if(i == 0){
+                    length_way += catalogue.GetDistance(ptr_bus->stops_[j - 1], ptr_bus->stops_[j]);
+                    length_way_reverse += catalogue.GetDistance(ptr_bus->stops_[j], ptr_bus->stops_[j - 1]);
+                }
+                if(i == j && i != 0){
+                    length_way -= catalogue.GetDistance(ptr_bus->stops_[i - 1], ptr_bus->stops_[i - 1]);
+                    length_way_reverse -= catalogue.GetDistance(ptr_bus->stops_[j - 1], ptr_bus->stops_[i]);
+                }*/
+                /*stops_graph.AddEdge({ 
+                        std::string{bus_name},
+                        j - i,
+                        stop_to_id_[ptr_bus->stops_[i]->name_] + 1,
+                        stop_to_id_[ptr_bus->stops_[j]->name_],
+                        length_way / coef
+                    });
 
+                if (!IsCircle) {
+                    stops_graph.AddEdge({ 
+                        std::string{bus_name},
+                        j - i,
+                        stop_to_id_[ptr_bus->stops_[j]->name_] + 1,
+                        stop_to_id_[ptr_bus->stops_[i]->name_],
+                        length_way_reverse / coef
+                    });
+                }*/
+            }
+        }
+        /*for(size_t i = 0; i < count_stops; ++i){
+            for(size_t j = i; j < count_stops; ++j){
+                if(stop_to_id_.find(ptr_bus->stops_[j]->name_) == stop_to_id_.end()){
+                    stop_to_id_.insert({ptr_bus->stops_[j]->name_, stop_to_id_.size() * 2});
+                    stops_graph.AddEdge({
+                        ptr_bus->stops_[j]->name_,
+                        0,
+                        stop_to_id_[ptr_bus->stops_[j]->name_],
+                        stop_to_id_[ptr_bus->stops_[j]->name_] + 1,
+                        bus_wait_time_ + 0.0
+                    });
+
+                }
+                if(){
+
+                }
+                if(i == j && i != 0){
+                    dist_way -= catalogue.GetDistance(ptr_bus->stops_[i], ptr_bus->stops_[j - 1]);
+                    dist_way_reverse -= IsCircle ? 0 : catalogue.GetDistance(ptr_bus->stops_[j - 1], ptr_bus->stops_[i]);
+                }else{
+                    dist_way += (j != 0)? catalogue.GetDistance(ptr_bus->stops_[j - 1], ptr_bus->stops_[j]): 0 ;
+                    dist_way_reverse += (IsCircle || j == 0 )? 0 : catalogue.GetDistance(ptr_bus->stops_[j], ptr_bus->stops_[j - 1]);
+                }
+                if(i != j){
+                    stops_graph.AddEdge({
+                        ptr_bus->name_,
+                        j - i,
+                        stop_to_id_[ptr_bus->stops_[i]->name_] + 1,
+                        stop_to_id_[ptr_bus->stops_[j]->name_],
+                        dist_way / coef
+                    });
+                    if(!IsCircle){
+                        stops_graph.AddEdge({
+                            ptr_bus->name_,
+                            j - i,
+                            stop_to_id_[ptr_bus->stops_[j]->name_] + 1,
+                            stop_to_id_[ptr_bus->stops_[i]->name_],
+                            dist_way_reverse / coef
+                        });
+                    }
+                   
+                }
+                
+            }
+            if(IsCircle && (i + 1 != count_stops)){
+                stops_graph.AddEdge({
+                    ptr_bus->name_,
+                    i + 1,
+                    stop_to_id_[ptr_bus->stops_.back()->name_] + 1,
+                    stop_to_id_[ptr_bus->stops_[i]->name_],
+                    dist_way_reverse / coef
+                });
+                dist_way_reverse += catalogue.GetDistance(ptr_bus->stops_[i], ptr_bus->stops_[i + 1]);
+            }
+        }*/
+    }
+
+    
     graph_ = std::move(stops_graph);
     router_ = std::make_unique<graph::Router<double>>(graph_);
 
     return graph_;
 }
 
-const std::optional<graph::Router<double>::RouteInfo> Router::FindRoute(const std::string_view stop_from, const std::string_view stop_to) const {
-	return router_->BuildRoute(stop_ids_.at(std::string(stop_from)),stop_ids_.at(std::string(stop_to)));
+const std::optional<graph::Router<double>::RouteInfo> TransportRouter::FindRoute(const std::string & stop_from, const std::string & stop_to) const {
+    auto iter_from = stop_to_id_.find(stop_from); auto iter_to = stop_to_id_.find(stop_to);
+    if((iter_from != stop_to_id_.end()) && (iter_to != stop_to_id_.end())){
+        return router_->BuildRoute((*iter_from).second, (*iter_to).second);
+    }
+	
+    return std::nullopt;
 }
 
-const graph::DirectedWeightedGraph<double>& Router::GetGraph() const {
+const graph::DirectedWeightedGraph<double>& TransportRouter::GetGraph() const {
 	return graph_;
 }
 

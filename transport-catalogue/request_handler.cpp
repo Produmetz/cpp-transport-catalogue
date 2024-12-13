@@ -21,7 +21,7 @@ svg::Document RequestHandler::RenderMap() const {
 }
 
 const std::optional<graph::Router<double>::RouteInfo> RequestHandler::GetOptimalRoute(const std::string_view stop_from, const std::string_view stop_to) const {
-    return router_.FindRoute(stop_from, stop_to);
+    return router_.FindRoute(std::string(stop_from), std::string(stop_to));
 };
 const graph::DirectedWeightedGraph<double>& RequestHandler::GetRouterGraph() const {
     return router_.GetGraph();

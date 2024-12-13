@@ -45,10 +45,12 @@ public:
     
     size_t UniqueStopsCount(std::string_view bus_number) const;
     int GetDistance(const Stop* from, const Stop* to) const;
+    int GetDistanceBetweenBusStops(const Bus* bus, const Stop* from , const Stop* to, bool IsForward)  const;
     BusInfo GetBusInfo(std::string_view name) const;
+    size_t GetCountStops() const ;
     const std::set<std::string> &GetBusesForStop(std::string_view stop_name) const;
     const std::map<std::string_view, const Bus*> GetSortedAllBuses() const;
-    const std::map<std::string_view, const Stop*> GetSortedAllStops() const;
+    const std::vector<const Stop*> GetAllStops() const;
 
 private:
     std::deque<Stop> stops_;

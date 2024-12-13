@@ -10,7 +10,7 @@
 
 class RequestHandler {
 public:
-    RequestHandler(const TransportCatalogue& catalogue, const renderer::MapRenderer& renderer, const Router& router)
+    RequestHandler(const TransportCatalogue& catalogue, const renderer::MapRenderer& renderer, const TransportRouter& router)
         : catalogue_(catalogue)
         , renderer_(renderer)
         , router_(router)
@@ -29,5 +29,5 @@ public:
 private:
     const TransportCatalogue& catalogue_;
     const renderer::MapRenderer& renderer_;
-    const Router& router_;
+    const TransportRouter& router_;
 };

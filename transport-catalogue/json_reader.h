@@ -5,6 +5,7 @@
 #include "map_renderer.h"
 #include "request_handler.h"
 
+
 #include <iostream>
 
 class JsonReader {
@@ -22,7 +23,7 @@ public:
 
     void FillCatalogue(TransportCatalogue& catalogue);
     renderer::MapRenderer FillRenderSettings(const json::Node& settings) const;
-    Router FillRoutingSettings(const json::Node& settings) const;
+    TransportRouter FillRoutingSettings(const json::Node& settings) const;
 
     const json::Node PrintRoute(const json::Dict& request_map, RequestHandler& rh) const;
     const json::Node PrintStop(const json::Dict& request_map, RequestHandler& rh) const;
