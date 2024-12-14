@@ -51,6 +51,12 @@ struct AlmostBus{
 
 struct ToStopInfo {
     Stop stop_;
-    /*distance fron stop_ */
+    /*distance from stop_ */
     std::map<std::string_view, int> distance_to_stops_;
 };
+
+struct RoutingSettings{
+    double bus_velocity;
+    int bus_wait_time;
+};
+

@@ -139,9 +139,9 @@ renderer::MapRenderer JsonReader::FillRenderSettings(const json::Node& settings)
     return render_settings;
 }
 
-TransportRouter JsonReader::FillRoutingSettings(const json::Node& settings) const {
-    TransportRouter routing_settings;
-    return TransportRouter{settings.AsDict().at("bus_wait_time").AsInt(), settings.AsDict().at("bus_velocity").AsDouble() };
+RoutingSettings JsonReader::FillRoutingSettings(const json::Node& settings) const {
+    //RoutingSettings routing_settings;
+    return RoutingSettings{settings.AsDict().at("bus_velocity").AsDouble(), settings.AsDict().at("bus_wait_time").AsInt()};
 }
 
 
@@ -219,10 +219,12 @@ const json::Node JsonReader::PrintRouting(const json::Dict& request_map, Request
     }
     else {
         json::Array items;
-        double total_time = 0.0;
-        items.reserve(routing.value().edges.size());
-        for (auto& edge_id : routing.value().edges) {
-            const graph::Edge<double> edge = rh.GetRouterGraph().GetEdge(edge_id);
+        double total_time = routing.value().total_weight;
+        items.reserve(routing.value().path.size());
+        for (const auto& edge : routing.value().path) {
+            //router_.GetEdge(edge_id);
+            //const graph::Edge<double> edge = rh.GetRouterGraph().GetEdge(edge_id);
+            //routing.value().
             if (edge.quality == 0) {
                 items.emplace_back(json::Node(json::Builder{}
                     .StartDict()
@@ -231,8 +233,6 @@ const json::Node JsonReader::PrintRouting(const json::Dict& request_map, Request
                         .Key("type").Value("Wait")
                     .EndDict()
                 .Build()));
-
-                total_time += edge.weight;
             }
             else {
                 items.emplace_back(json::Node(json::Builder{}
@@ -243,8 +243,6 @@ const json::Node JsonReader::PrintRouting(const json::Dict& request_map, Request
                         .Key("type").Value("Bus")
                     .EndDict()
                 .Build()));
-
-                total_time += edge.weight;
             }
         }
 
