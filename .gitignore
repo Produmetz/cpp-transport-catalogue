@@ -31,13 +31,14 @@
 *.out
 *.app
 
-# Without vs code and txt
-.vscode
-#*.txt
-build
-otherfiles
-#cpp-transport-catalogue
+# Build directories
+build/
 
-#the past
-stat_reader.*
-input_reader.*
+# IDE files
+.vscode/
+.idea/
+
+# Editor temporary files
+*.swp
+*.swo
+*~
